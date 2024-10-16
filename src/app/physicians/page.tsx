@@ -11,14 +11,13 @@ import { useModal } from '@/components/ModalProvider'
 
 
 export default function PhysiciansPage() {
-  const { data: physicians, isLoading, error } = useGetPhysicians();
-  const { postData: addPhysician, isLoading: isAdding, error: addError } = useAddPhysician();
+  const { data: physicians, isLoading, error, fetchData } = useGetPhysicians();
   const [searchTerm, setSearchTerm] = useState('');
   const { isModalOpen, setIsModalOpen } = useModal();
 
-  const handleAddPhysician = async (formData: FormData) => {
+  const afterAddCb = async () => {
     try {
-      await addPhysician(formData);
+      await fetchData()
       setIsModalOpen(false);
       // Optionally, you can refetch the physicians list here
     } catch (error) {
@@ -77,7 +76,7 @@ export default function PhysiciansPage() {
       )}
 
       {filteredPhysicians && (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
           {filteredPhysicians.map((physician) => (
             <PhysicianCard key={physician._id} physician={physician} />
           ))}
@@ -85,24 +84,7 @@ export default function PhysiciansPage() {
       )}
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add New Physician">
-        <PhysicianForm onSubmit={handleAddPhysician} />
-        {isAdding && (
-          <div className="mt-4 flex justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
-          </div>
-        )}
-        {addError && (
-          <div className="mt-4 rounded-md bg-red-900 p-4">
-            <div className="flex">
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-300">Error adding physician</h3>
-                <div className="mt-2 text-sm text-red-200">
-                  <p>{addError.message}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <PhysicianForm onSubmit={afterAddCb} />
       </Modal>
     </>
   );

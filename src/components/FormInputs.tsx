@@ -10,6 +10,7 @@ interface InputProps {
   required?: boolean;
   placeholder?: string;
   icon?: React.ReactNode;
+  error?: string;
 }
 
 export const TextInput: React.FC<InputProps> = ({
@@ -21,13 +22,14 @@ export const TextInput: React.FC<InputProps> = ({
   required,
   placeholder,
   icon,
+  error,
 }) => (
   <div className="mb-4">
     <label
       htmlFor={id}
       className="block text-sm font-medium text-gray-300 mb-2"
     >
-      {label}
+      {label} {error ? <span className="text-red-500">({error})</span>: <></>}
     </label>
     <div className="relative rounded-md shadow-sm">
       {icon && (
@@ -108,6 +110,7 @@ interface FileInputProps {
   label: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   previewUrl: string | null;
+  error?: string;
 }
 
 export const FileInput: React.FC<FileInputProps> = ({
@@ -115,23 +118,24 @@ export const FileInput: React.FC<FileInputProps> = ({
   label,
   onChange,
   previewUrl,
+  error,
 }) => (
   <div className="mb-4">
     <label
       htmlFor={id}
       className="block text-sm font-medium text-gray-300 mb-2"
     >
-      {label}
+      {label} {error ? <span className="text-red-500">({error})</span>: <></>}
     </label>
     <div className="flex items-center">
       {previewUrl ? (
         <img
           src={previewUrl}
           alt="Preview"
-          className="w-16 h-16 rounded-full object-cover mr-4 border-2 border-indigo-500"
+          className="w-24 h-24 rounded-full object-cover mr-4 border-2 border-indigo-500"
         />
       ) : (
-        <div className="w-16 h-16 rounded-full bg-gray-600 flex items-center justify-center mr-4">
+        <div className="w-24 h-24 rounded-full bg-gray-600 flex items-center justify-center mr-4">
           <svg
             className="h-8 w-8 text-gray-400"
             fill="none"

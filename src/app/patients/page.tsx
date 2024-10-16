@@ -8,21 +8,27 @@ import Modal from '@/components/Modal'
 import { SearchInput } from '@/components/FormInputs'
 import debounce from 'lodash/debounce'
 import { useModal } from '@/components/ModalProvider'
+import toast from 'react-hot-toast';
 
 export default function PatientsPage() {
-  const { data: patients, isLoading, error } = useGetPatients();
-  const { postData: addPatient, isLoading: isAdding, error: addError } = useAddPatient();
+  const { data: patients, isLoading, error, fetchData } = useGetPatients();
   const [searchTerm, setSearchTerm] = useState('');
   const { isModalOpen, setIsModalOpen } = useModal();
 
-  const handleAddPatient = async (formData: FormData) => {
+  const afterAddCb = async () => {
     try {
-      await addPatient(formData);
       setIsModalOpen(false);
-      // Optionally, you can refetch the patients list here
+    await  fetchData()
     } catch (error) {
       console.error('Failed to add patient:', error);
     }
+  };
+
+  const handleAddRequisition = () => {
+    toast.success('Coming soon!', {
+      icon: '🚀',
+      duration: 3000,
+    });
   };
 
   const debouncedSearch = useCallback(
@@ -37,8 +43,7 @@ export default function PatientsPage() {
   };
 
   const filteredPatients = patients?.filter(patient => 
-    patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.email.toLowerCase().includes(searchTerm.toLowerCase())
+    patient.name.toLowerCase().includes(searchTerm.toLowerCase()) 
   );
 
   return (
@@ -77,30 +82,13 @@ export default function PatientsPage() {
       {filteredPatients && (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-4 lg:grid-cols-4">
           {filteredPatients.map((patient) => (
-            <PatientCard key={patient._id} patient={patient} />
+            <PatientCard key={patient._id} patient={patient} onAddClick={handleAddRequisition} />
           ))}
         </div>
       )}
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add New Patient">
-        <PatientForm onSubmit={handleAddPatient} />
-        {isAdding && (
-          <div className="mt-4 flex justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
-          </div>
-        )}
-        {addError && (
-          <div className="mt-4 rounded-md bg-red-900 p-4">
-            <div className="flex">
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-300">Error adding patient</h3>
-                <div className="mt-2 text-sm text-red-200">
-                  <p>{addError.message}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <PatientForm onSubmit={afterAddCb} />
       </Modal>
     </>
   );

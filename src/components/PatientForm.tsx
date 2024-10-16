@@ -1,31 +1,84 @@
-import React, { useState } from 'react';
-import { TextInput, FileInput } from './FormInputs';
-import { UserCircleIcon } from '@heroicons/react/24/solid';
+import React, { useEffect, useState } from "react";
+import { TextInput, FileInput } from "./FormInputs";
+import { UserCircleIcon } from "@heroicons/react/24/solid";
+import { usePost } from "@/hooks/usePost";
+import clsx from "clsx";
 
 interface PatientFormProps {
-  onSubmit: (formData: FormData) => Promise<void>;
+  onSubmit: () => void;
 }
 
+const SA_PROVINCES = [
+  "Eastern Cape",
+  "Free State",
+  "Gauteng",
+  "KwaZulu-Natal",
+  "Limpopo",
+  "Mpumalanga",
+  "North West",
+  "Northern Cape",
+  "Western Cape",
+];
+
 export default function PatientForm({ onSubmit }: PatientFormProps) {
-  const [name, setName] = useState('');
-  const [street, setStreet] = useState('');
-  const [city, setCity] = useState('');
-  const [province, setProvince] = useState('');
-  const [postalCode, setPostalCode] = useState('');
+  const [name, setName] = useState("");
+  const [street, setStreet] = useState("");
+  const [city, setCity] = useState("");
+  const [province, setProvince] = useState("");
+  const [postalCode, setPostalCode] = useState("");
   const [avatar, setAvatar] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  const { postData, isLoading, error, data } = usePost("/api/patients");
+
+  useEffect(() => {
+    if (data) {
+      setSubmitSuccess(true);
+      setTimeout(() => {
+        onSubmit();
+      }, 4000);
+    }
+  }, [data])
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    const fields = { name, street, city, province, postalCode, avatar };
+
+    Object.entries(fields).forEach(([fieldName, fieldValue]) => {
+      if (!fieldValue) newErrors[fieldName] = "required";
+    });
+
+    if (!SA_PROVINCES.includes(province)) {
+      newErrors.province = "Invalid province";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const formData = new FormData();
-    formData.append('name', name);
-    formData.append('street', street);
-    formData.append('city', city);
-    formData.append('province', province);
-    formData.append('postalCode', postalCode);
-    if (avatar) formData.append('avatar', avatar);
+    if (!validateForm()) return;
 
-    await onSubmit(formData);
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("street", street);
+    formData.append("city", city);
+    formData.append("province", province);
+    formData.append("postalCode", postalCode);
+    if (avatar) formData.append("avatar", avatar);
+
+    try {
+      await postData(formData);
+      
+    } catch (err) {
+      console.error("Error submitting form:", err);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,79 +94,97 @@ export default function PatientForm({ onSubmit }: PatientFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-lg mx-auto bg-gray-900 p-8 rounded-xl shadow-lg">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-6 max-w-lg mx-auto bg-gray-900 p-8 rounded-xl shadow-lg"
+    >
       {/* Avatar Upload Section */}
       <div className="flex items-center space-x-6">
         {/* Avatar Preview or Placeholder */}
         <div className="relative">
-          {previewUrl ? (
-            <img
-              src={previewUrl}
-              alt="Avatar Preview"
-              className="w-24 h-24 rounded-full object-cover shadow-md"
-            />
-          ) : (
-            <div className="w-24 h-24 bg-gray-700 rounded-full flex items-center justify-center text-gray-400">
-              <UserCircleIcon className="w-16 h-16" />
-            </div>
-          )}
         </div>
-        
         {/* File Input */}
-        <FileInput id="avatar" label="Upload Avatar" onChange={handleFileChange} />
+        <FileInput
+          error={errors.avatar}
+          id="avatar"
+          label="Avatar*"
+          onChange={handleFileChange}
+          previewUrl={previewUrl}
+        />
       </div>
 
       {/* Input Fields (One per Line) */}
       <TextInput
         id="name"
-        label="Full Name"
+        label="Full Name*"
         type="text"
         value={name}
         onChange={(e) => setName(e.target.value)}
-        required
+        error={errors.name}
       />
+
       <TextInput
         id="street"
-        label="Street Address"
+        label="Street Address*"
         type="text"
         value={street}
         onChange={(e) => setStreet(e.target.value)}
-        required
+        error={errors.street}
       />
+
       <TextInput
         id="city"
-        label="City"
+        label="City*"
         type="text"
         value={city}
         onChange={(e) => setCity(e.target.value)}
-        required
+        error={errors.city}
       />
+
       <TextInput
         id="province"
-        label="Province"
+        label="Province*"
         type="text"
         value={province}
         onChange={(e) => setProvince(e.target.value)}
-        required
+        error={errors.province}
       />
+
       <TextInput
         id="postalCode"
-        label="Postal Code"
+        label="Postal Code*"
         type="text"
         value={postalCode}
         onChange={(e) => setPostalCode(e.target.value)}
-        required
+        error={errors.postalCode}
       />
 
       {/* Submit Button */}
       <div className="pt-5">
         <button
           type="submit"
-          className="w-full py-3 text-white font-semibold bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-all"
+          className={clsx(
+            `w-full py-3 text-white font-semibold rounded-lg transition-all`,
+            {
+              "bg-gray-500": isLoading && !data,
+              "bg-indigo-600 hover:bg-indigo-700": !isLoading && !data,
+              "bg-green-500": data,
+            }
+          )}
+          disabled={isLoading}
         >
-          Add Patient
+          {submitSuccess
+            ? "Patient Added Successfully"
+            : isLoading
+            ? "Adding..."
+            : "Add Patient"}
         </button>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <p className="text-red-500 text-sm mt-4">Error: {error.message}</p>
+      )}
     </form>
   );
 }

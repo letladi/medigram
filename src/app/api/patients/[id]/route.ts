@@ -1,32 +1,68 @@
 import { NextRequest, NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
+import { connectMongoDB } from '@/lib/mongoose';
 import { ObjectId } from 'mongodb';
-import { Patient } from '@/types';
+import { PatientModel } from '@/models/Patient'; // Ensure this import is correct
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  console.log('GET request received for patient:', params.id); // Debugging
+  console.log('GET request received for patient:', params.id);
+
+  if (!ObjectId.isValid(params.id)) {
+    return NextResponse.json({ error: 'Invalid patient ID' }, { status: 400 });
+  }
+
+  await connectMongoDB();
 
   try {
-    const client = await clientPromise;
-    const db = client.db('medigram');
-    const patient = await db.collection<Patient>('patients').findOne({
-      _id: new ObjectId(params.id),
-    });
+    const patient = await PatientModel.aggregate([
+      {
+        $match: { _id: new ObjectId(params.id) }
+      },
+      {
+        $lookup: {
+          from: 'requisitions',
+          localField: '_id',
+          foreignField: 'patientId',
+          as: 'requisitions',
+        },
+      },
+      {
+        $lookup: {
+          from: 'tests',
+          localField: 'requisitions._id',
+          foreignField: 'requisitionId',
+          as: 'tests',
+        },
+      },
+      {
+        $lookup: {
+          from: 'addresses',
+          localField: 'addressId',
+          foreignField: '_id',
+          as: 'address',
+        },
+      },
+      {
+        $unwind: {
+          path: '$address',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+    ]).exec();
 
-    if (!patient) {
-      console.warn('Patient not found:', params.id); // Debugging
+    if (!patient || patient.length === 0) {
+      console.warn('Patient not found:', params.id);
       return NextResponse.json({ error: 'Patient not found' }, { status: 404 });
     }
 
-    console.log('Patient found:', patient); // Debugging
-    return NextResponse.json(patient);
+    console.log('Patient found:', patient[0]);
+    return NextResponse.json(patient[0]);
   } catch (error) {
-    console.error('Error fetching patient:', error); // Debugging
+    console.error('Error fetching patient:', error);
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { error: 'Internal Server Error', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }
