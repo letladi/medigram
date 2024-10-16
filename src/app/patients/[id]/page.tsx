@@ -21,7 +21,7 @@ export default function PatientPage() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex">
       <div className="w-1/4 p-4 overflow-hidden flex flex-col">
         <div className="flex-grow overflow-y-auto">
           <PatientSidebar
