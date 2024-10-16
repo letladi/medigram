@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
 import { getGridFSBucket } from '@/lib/gridfs';
 import { Readable } from 'stream';
 import { ObjectId } from 'mongodb';
-import { Patient } from '@/types';
+import { PatientModel } from '@/models/Patient';
+import { AddressModel } from '@/models/Address';
+import { connectMongoDB } from '@/lib/mongoose';
 
+/** Disable body parsing for multipart/form-data */
 export const config = {
   api: {
     bodyParser: false,
@@ -12,7 +14,7 @@ export const config = {
 };
 
 /**
- * Helper to parse form data from Next.js request.
+ * Helper to parse form data from a Next.js request.
  */
 async function parseFormData(request: NextRequest) {
   const formData = await request.formData();
@@ -34,58 +36,90 @@ async function parseFormData(request: NextRequest) {
  * POST: Create a new patient with optional avatar upload.
  */
 export async function POST(request: NextRequest) {
-  const client = await clientPromise;
-  const db = client.db('medigram');
-  const bucket = await getGridFSBucket();
-
+  await connectMongoDB();
   try {
+    const bucket = await getGridFSBucket();
     const { fields, avatar } = await parseFormData(request);
 
     const { name, street, city, province, postalCode } = fields;
     let avatarUrl = null;
 
-    // Upload avatar to the "avatars" bucket in GridFS
+    // Upload avatar to GridFS if present
     if (avatar) {
       const arrayBuffer = await avatar.arrayBuffer();
       const uploadStream = bucket.openUploadStream(avatar.name);
       const bufferStream = Readable.from(Buffer.from(arrayBuffer));
       bufferStream.pipe(uploadStream);
 
-      // Wait for the upload to complete
       await new Promise((resolve, reject) => {
         uploadStream.on('finish', resolve);
         uploadStream.on('error', reject);
       });
 
-      avatarUrl = `/api/avatars/${uploadStream.id}`; // Use the GridFS file ID
+      avatarUrl = `/api/avatars/${uploadStream.id}`;
     }
 
-    // Create a new patient with the avatar URL
-    const newPatient: Patient = {
+    // Create and save the address
+    const address = new AddressModel({ street, city, province, postalCode });
+    const savedAddress = await address.save();
+
+    // Create and save the patient with the address ID
+    const newPatient = new PatientModel({
       name,
-      address: { street, city, province, postalCode },
+      addressId: savedAddress._id, // Reference the address ID
       avatarUrl,
       createdAt: new Date(),
       updatedAt: new Date(),
-    };
+    });
 
-    const result = await db.collection<Patient>('patients').insertOne(newPatient);
-    return NextResponse.json({ id: result.insertedId }, { status: 201 });
+    const savedPatient = await newPatient.save();
+    return NextResponse.json({ id: savedPatient._id.toString() }, { status: 201 });
   } catch (error) {
     console.error('Error creating patient:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
-
-/** 
- * GET: Retrieve all patients
+/**
+ * GET: Retrieve all patients from the database.
  */
 export async function GET() {
+  await connectMongoDB();
+
   try {
-    const client = await clientPromise;
-    const db = client.db('medigram');
-    const patients = await db.collection<Patient>('patients').find({}).toArray();
+    const patients = await PatientModel.aggregate([
+      {
+        $lookup: {
+          from: 'requisitions', // Collection name for requisitions
+          localField: '_id',
+          foreignField: 'patientId',
+          as: 'requisitions',
+        },
+      },
+      {
+        $lookup: {
+          from: 'tests', // Collection name for tests
+          localField: 'requisitions._id',
+          foreignField: 'requisitionId',
+          as: 'tests',
+        },
+      },
+      {
+        $lookup: {
+          from: 'addresses', // Collection name for addresses
+          localField: 'addressId',
+          foreignField: '_id',
+          as: 'address',
+        },
+      },
+      {
+        $unwind: {
+          path: '$address',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+    ]);
+
     return NextResponse.json(patients);
   } catch (error) {
     console.error('Error fetching patients:', error);
@@ -93,11 +127,11 @@ export async function GET() {
   }
 }
 
-
-/** 
- * DELETE: Remove a patient and delete their avatar from GridFS
+/**
+ * DELETE: Remove a patient and delete their avatar from GridFS.
  */
 export async function DELETE(request: NextRequest) {
+  await connectMongoDB();
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
 
@@ -105,26 +139,23 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: 'Patient ID is required' }, { status: 400 });
   }
 
-  const client = await clientPromise;
-  const db = client.db('medigram');
-  const bucket = await getGridFSBucket();
-
   try {
-    // Find the patient by ID
-    const patient = await db.collection<Patient>('patients').findOne({ _id: new ObjectId(id) });
+    const bucket = await getGridFSBucket();
+    const patient = await PatientModel.findById(id);
 
     if (!patient) {
       return NextResponse.json({ error: 'Patient not found' }, { status: 404 });
     }
 
-    // Delete the avatar from GridFS if it exists
+    // Delete avatar from GridFS if it exists
     if (patient.avatarUrl) {
       const avatarId = patient.avatarUrl.split('/').pop();
       await bucket.delete(new ObjectId(avatarId)).catch(console.error);
     }
 
-    // Delete the patient from the database
-    await db.collection<Patient>('patients').deleteOne({ _id: new ObjectId(id) });
+    // Delete the patient and associated address
+    await AddressModel.deleteOne({ _id: patient.addressId });
+    await PatientModel.deleteOne({ _id: id });
 
     return NextResponse.json({ message: 'Patient deleted successfully' });
   } catch (error) {

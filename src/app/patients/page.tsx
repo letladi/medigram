@@ -75,7 +75,7 @@ export default function PatientsPage() {
       )}
 
       {filteredPatients && (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-4 lg:grid-cols-5">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-4 lg:grid-cols-4">
           {filteredPatients.map((patient) => (
             <PatientCard key={patient._id} patient={patient} />
           ))}

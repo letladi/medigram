@@ -1,143 +1,154 @@
 import { NextRequest, NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
+import { PhysicianModel } from '@/models/Physician';
+import { AddressModel } from '@/models/Address';
+import {connectMongoDB} from '@/lib/mongoose';
 import { getGridFSBucket } from '@/lib/gridfs';
-import { Patient, Requisition, Test } from '@/types';
-import { ObjectId } from 'mongodb';
-import formidable from 'formidable';
 import { Readable } from 'stream';
+import { ObjectId } from 'mongodb';
 
-// Disable automatic body parsing to handle file uploads with Formidable
+/** Disable body parsing for multipart/form-data */
 export const config = {
   api: {
     bodyParser: false,
   },
 };
 
-/** 
- * GET: Retrieve all patients with their tests and requisitions
+/**
+ * Helper to parse form data from a Next.js request.
+ */
+async function parseFormData(request: NextRequest) {
+  const formData = await request.formData();
+  const fields: Record<string, string> = {};
+  let avatar: File | undefined;
+
+  formData.forEach((value, key) => {
+    if (key === 'avatar' && value instanceof File) {
+      avatar = value;
+    } else {
+      fields[key] = value.toString();
+    }
+  });
+
+  return { fields, avatar };
+}
+
+/**
+ * GET: Retrieve all physicians with their related patients and requisitions.
  */
 export async function GET() {
+  await connectMongoDB();
   try {
-    const client = await clientPromise;
-    const db = client.db('medigram');
+    // Find all physicians and populate their related fields
+    const physicians = await PhysicianModel.aggregate([
+      {
+        $lookup: {
+          from: 'requisitions',
+          localField: '_id',
+          foreignField: 'physicianId',
+          as: 'requisitions',
+        },
+      },
+      {
+        $lookup: {
+          from: 'patients',
+          localField: 'requisitions.patientId',
+          foreignField: '_id',
+          as: 'patients',
+        },
+      },
+    ]);
 
-    // Fetch all patients
-    const patients = await db.collection<Patient>('patients').find({}).toArray();
-
-    // Map patients to include their requisitions and tests
-    const patientsWithDetails = await Promise.all(
-      patients.map(async (patient) => {
-        const requisitions = await db
-          .collection<Requisition>('requisitions')
-          .find({ patientId: patient._id })
-          .toArray();
-
-        // Fetch associated tests for each requisition
-        const requisitionsWithTests = await Promise.all(
-          requisitions.map(async (req) => {
-            const tests = await db
-              .collection<Test>('tests')
-              .find({ _id: { $in: req.tests.map((t) => t.testId) } })
-              .toArray();
-            return { ...req, tests };
-          })
-        );
-
-        return { ...patient, requisitions: requisitionsWithTests };
-      })
-    );
-
-    return NextResponse.json(patientsWithDetails);
+    return NextResponse.json(physicians);
   } catch (error) {
-    console.error('Error fetching patients:', error);
+    console.error('Error fetching physicians:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
-/** 
- * POST: Create a new patient with optional avatar upload 
+/**
+ * POST: Create a new physician with optional avatar upload.
  */
 export async function POST(request: NextRequest) {
-  const client = await clientPromise;
-  const db = client.db('medigram');
+  await connectMongoDB();
   const bucket = await getGridFSBucket();
 
   try {
-    const form = new formidable.IncomingForm();
+    const { fields, avatar } = await parseFormData(request);
 
-    // Parse form data and files
-    const data: any = await new Promise((resolve, reject) => {
-      form.parse(request as any, (err, fields, files) => {
-        if (err) reject(err);
-        resolve({ fields, files });
-      });
-    });
-
-    const { name, street, city, province, postalCode } = data.fields;
-    const avatar = data.files?.avatar;
+    const { name, specialization, street, city, province, postalCode, licenseNumber } = fields;
     let avatarUrl = null;
 
     // Upload avatar to GridFS if available
     if (avatar) {
-      const uploadStream = bucket.openUploadStream(avatar.originalFilename);
-      const fileStream = Readable.from(avatar.filepath);
-      fileStream.pipe(uploadStream);
+      const arrayBuffer = await avatar.arrayBuffer();
+      const uploadStream = bucket.openUploadStream(avatar.name);
+      const bufferStream = Readable.from(Buffer.from(arrayBuffer));
+      bufferStream.pipe(uploadStream);
+
+      await new Promise((resolve, reject) => {
+        uploadStream.on('finish', resolve);
+        uploadStream.on('error', reject);
+      });
 
       avatarUrl = `/api/avatars/${uploadStream.id}`;
     }
 
-    // Create new patient object
-    const newPatient: Patient = {
+    // Create and save the address
+    const address = new AddressModel({ street, city, province, postalCode });
+    const savedAddress = await address.save();
+
+    // Create new physician object
+    const newPhysician = new PhysicianModel({
       name,
-      address: { street, city, province, postalCode },
+      specialization,
+      addressId: savedAddress._id, // Reference the address ID
+      licenseNumber,
       avatarUrl,
       createdAt: new Date(),
       updatedAt: new Date(),
-    };
+    });
 
-    const result = await db.collection<Patient>('patients').insertOne(newPatient);
-    return NextResponse.json({ id: result.insertedId }, { status: 201 });
+    const savedPhysician = await newPhysician.save();
+    return NextResponse.json({ id: savedPhysician._id.toString() }, { status: 201 });
   } catch (error) {
-    console.error('Error creating patient:', error);
+    console.error('Error creating physician:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
-/** 
- * DELETE: Remove a patient and delete their avatar from GridFS
+/**
+ * DELETE: Remove a physician.
  */
 export async function DELETE(request: NextRequest) {
+  await connectMongoDB();
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
 
   if (!id) {
-    return NextResponse.json({ error: 'Patient ID is required' }, { status: 400 });
+    return NextResponse.json({ error: 'Physician ID is required' }, { status: 400 });
   }
 
-  const client = await clientPromise;
-  const db = client.db('medigram');
   const bucket = await getGridFSBucket();
 
   try {
-    // Find the patient by ID
-    const patient = await db.collection<Patient>('patients').findOne({ _id: new ObjectId(id) });
+    const physician = await PhysicianModel.findById(id);
 
-    if (!patient) {
-      return NextResponse.json({ error: 'Patient not found' }, { status: 404 });
+    if (!physician) {
+      return NextResponse.json({ error: 'Physician not found' }, { status: 404 });
     }
 
-    // Delete the avatar from GridFS if available
-    if (patient.avatarUrl) {
-      const avatarId = patient.avatarUrl.split('/').pop();
+    // Delete avatar from GridFS if available
+    if (physician.avatarUrl) {
+      const avatarId = physician.avatarUrl.split('/').pop();
       await bucket.delete(new ObjectId(avatarId)).catch(console.error);
     }
 
-    // Delete the patient from the database
-    await db.collection<Patient>('patients').deleteOne({ _id: new ObjectId(id) });
-
-    return NextResponse.json({ message: 'Patient deleted successfully' });
+    // Delete the associated address
+    await AddressModel.deleteOne({ _id: physician.addressId });
+    await PhysicianModel.deleteOne({ _id: id });
+    return NextResponse.json({ message: 'Physician deleted successfully' });
   } catch (error) {
-    console.error('Error deleting patient:', error);
+    console.error('Error deleting physician:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
