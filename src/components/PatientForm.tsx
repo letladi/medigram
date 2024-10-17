@@ -163,7 +163,9 @@ export default function PatientForm({ onSubmit }: PatientFormProps) {
 
         <div className="relative">
           <label htmlFor="province" className="block text-sm font-medium text-gray-300 mb-1">
-            Province*
+            Province* {errors.province && (
+            <span className="mt-1 text-sm text-red-500 ml-4">{errors.province}</span>
+          )}
           </label>
           <Select
             id="province"
@@ -174,9 +176,7 @@ export default function PatientForm({ onSubmit }: PatientFormProps) {
             menuPortalTarget={document.body}
             menuPosition="fixed"
           />
-          {errors.province && (
-            <p className="mt-1 text-sm text-red-500">{errors.province}</p>
-          )}
+          
         </div>
 
         <TextInput
