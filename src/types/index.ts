@@ -9,6 +9,10 @@ export interface Address {
   postalCode: string;
 }
 
+export type AddressWithStringId = Omit<Address, '_id'> & { 
+  _id: string; 
+};
+
 /** Patient Interface */
 export interface Patient {
   _id?: ObjectId;
@@ -42,6 +46,7 @@ export type PhysicianWithStringId = Omit<Physician, '_id' | 'addressId'> & {
   addressId: string; 
   patients: PatientWithStringId[];
   requisitions: RequisitionWithStringId[];
+  address: AddressWithStringId;
 };
 
 /** Test Interface */

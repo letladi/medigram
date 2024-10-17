@@ -126,7 +126,6 @@ export default function PatientForm({ onSubmit }: PatientFormProps) {
         <FileInput
           error={errors.avatar}
           id="avatar"
-          label="Avatar*"
           onChange={handleFileChange}
           previewUrl={previewUrl}
         />

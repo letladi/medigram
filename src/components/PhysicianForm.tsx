@@ -140,7 +140,6 @@ export default function PhysicianForm({ onSubmit }: PhysicianFormProps) {
       <div className="flex justify-center mb-6">
         <FileInput
           id="avatar"
-          label="Avatar*"
           onChange={handleFileChange}
           previewUrl={previewUrl}
           error={errors.avatar}
