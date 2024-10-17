@@ -6,12 +6,6 @@ import { getGridFSBucket } from '@/lib/gridfs';
 import { Readable } from 'stream';
 import { ObjectId } from 'mongodb';
 
-/** Disable body parsing for multipart/form-data */
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
 
 /**
  * Helper to parse form data from a Next.js request.

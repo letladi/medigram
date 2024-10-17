@@ -6,13 +6,6 @@ import { PatientModel } from '@/models/Patient';
 import { AddressModel } from '@/models/Address';
 import { connectMongoDB } from '@/lib/mongoose';
 
-/** Disable body parsing for multipart/form-data */
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
 /**
  * Helper to parse form data from a Next.js request.
  */

@@ -6,13 +6,6 @@ import { PatientModel } from '@/models/Patient';
 import { PhysicianModel } from '@/models/Physician';
 import isEmpty from 'lodash/isEmpty';
 
-/** Disable body parsing for multipart/form-data */
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
 /**
  * Helper to parse form data from a Next.js request.
  */

@@ -4,7 +4,7 @@ import axios from 'axios';
 interface PostState<T> {
   data: T | null;
   isLoading: boolean;
-  error: Error | null;
+  error: any | null;
 }
 
 export function usePost<T>(url: string) {
