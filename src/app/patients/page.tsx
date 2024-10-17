@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
+import { useParams, useRouter } from "next/navigation";
 import { useGetPatients, useAddPatient } from '@/hooks/usePatients'
 import PatientCard from '@/components/PatientCard'
 import PatientForm from '@/components/PatientForm'
@@ -8,9 +9,11 @@ import Modal from '@/components/Modal'
 import { SearchInput } from '@/components/FormInputs'
 import debounce from 'lodash/debounce'
 import { useModal } from '@/components/ModalProvider'
-import toast from 'react-hot-toast';
+import SpinningLoader from '@/components/SpinningLoader'
+import { PatientWithStringId } from '@/types';
 
 export default function PatientsPage() {
+  const router = useRouter();
   const { data: patients, isLoading, error, fetchData } = useGetPatients();
   const [searchTerm, setSearchTerm] = useState('');
   const { isModalOpen, setIsModalOpen } = useModal();
@@ -24,11 +27,8 @@ export default function PatientsPage() {
     }
   };
 
-  const handleAddRequisition = () => {
-    toast.success('Coming soon!', {
-      icon: '🚀',
-      duration: 3000,
-    });
+  const handleAddRequisition = (patient: PatientWithStringId) => {
+    router.push(`/patients/${patient._id}/new`);
   };
 
   const debouncedSearch = useCallback(
@@ -56,14 +56,12 @@ export default function PatientsPage() {
           label=""
           type="text"
           onChange={handleSearchChange}
-          placeholder="Search patients"
+          placeholder="Filter patients"
         />
       </div>
 
       {isLoading && (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-500"></div>
-        </div>
+        <SpinningLoader />
       )}
 
       {error && (
@@ -82,7 +80,7 @@ export default function PatientsPage() {
       {filteredPatients && (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-4 lg:grid-cols-4">
           {filteredPatients.map((patient) => (
-            <PatientCard key={patient._id} patient={patient} onAddClick={handleAddRequisition} />
+            <PatientCard key={patient._id} patient={patient} onAddClick={() => handleAddRequisition(patient)} />
           ))}
         </div>
       )}

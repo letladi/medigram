@@ -1,11 +1,12 @@
 import React from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+import clsx from "clsx";
 
 interface InputProps {
   id: string;
   label: string;
   type: string;
-  value: string;
+  value?: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   required?: boolean;
   placeholder?: string;
@@ -24,13 +25,15 @@ export const TextInput: React.FC<InputProps> = ({
   icon,
   error,
 }) => (
-  <div className="mb-4">
-    <label
-      htmlFor={id}
-      className="block text-sm font-medium text-gray-300 mb-2"
-    >
-      {label} {error ? <span className="text-red-500">({error})</span>: <></>}
-    </label>
+  <div className="w-full">
+    {label && (
+      <label
+        htmlFor={id}
+        className="block text-sm font-medium text-gray-300 mb-1"
+      >
+        {label}
+      </label>
+    )}
     <div className="relative rounded-md shadow-sm">
       {icon && (
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -44,64 +47,15 @@ export const TextInput: React.FC<InputProps> = ({
         onChange={onChange}
         required={required}
         placeholder={placeholder}
-        className={`block w-full rounded-md border-0 bg-gray-700 text-gray-100 placeholder-gray-400
-                    focus:ring-2 focus:ring-indigo-500 sm:text-sm
-                    ${icon ? "pl-10" : "pl-4"} pr-4 py-3
-                    transition duration-150 ease-in-out
-                    hover:bg-gray-600 focus:bg-gray-600`}
+        className={clsx(
+          `block w-full rounded-md border-0 bg-gray-700 text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 
+          sm:text-sm h-10`,
+          icon ? 'pl-10' : 'pl-3',
+          'pr-3'
+        )}
       />
     </div>
-  </div>
-);
-
-interface SelectProps {
-  id: string;
-  label: string;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-  options: { value: string; label: string }[];
-  required?: boolean;
-}
-
-export const SelectInput: React.FC<SelectProps> = ({
-  id,
-  label,
-  value,
-  onChange,
-  options,
-  required,
-}) => (
-  <div className="mb-4">
-    <label
-      htmlFor={id}
-      className="block text-sm font-medium text-gray-300 mb-2"
-    >
-      {label}
-    </label>
-    <select
-      id={id}
-      value={value}
-      onChange={onChange}
-      required={required}
-      className="block w-full rounded-md border-0 bg-gray-700 text-gray-100
-                focus:ring-2 focus:ring-indigo-500 sm:text-sm
-                pl-4 pr-8 py-3
-                transition duration-150 ease-in-out
-                hover:bg-gray-600 focus:bg-gray-600
-                appearance-none"
-      style={{
-        backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-        backgroundPosition: `right 0.5rem center`,
-        backgroundRepeat: `no-repeat`,
-        backgroundSize: `1.5em 1.5em`,
-      }}
-    >
-      {options.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
+    {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
   </div>
 );
 
@@ -125,7 +79,7 @@ export const FileInput: React.FC<FileInputProps> = ({
       htmlFor={id}
       className="block text-sm font-medium text-gray-300 mb-2"
     >
-      {label} {error ? <span className="text-red-500">({error})</span>: <></>}
+      {label} {error ? <span className="text-red-500">({error})</span> : <></>}
     </label>
     <div className="flex items-center">
       {previewUrl ? (
@@ -171,7 +125,6 @@ export const SearchInput: React.FC<InputProps> = (props) => (
       />
     </div>
     <input
-      type="text"
       {...props}
       className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-gray-700 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
     />

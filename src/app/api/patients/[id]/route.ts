@@ -18,7 +18,7 @@ export async function GET(
   try {
     const patient = await PatientModel.aggregate([
       {
-        $match: { _id: new ObjectId(params.id) }
+        $match: { _id: new ObjectId(params.id) },
       },
       {
         $lookup: {
@@ -26,6 +26,14 @@ export async function GET(
           localField: '_id',
           foreignField: 'patientId',
           as: 'requisitions',
+        },
+      },
+      {
+        $lookup: {
+          from: 'physicians',
+          localField: 'requisitions.physicianId',
+          foreignField: '_id',
+          as: 'physicianDetails',
         },
       },
       {
@@ -50,7 +58,42 @@ export async function GET(
           preserveNullAndEmptyArrays: true,
         },
       },
+      {
+        $addFields: {
+          requisitions: {
+            $map: {
+              input: '$requisitions',
+              as: 'requisition',
+              in: {
+                $mergeObjects: [
+                  '$$requisition',
+                  {
+                    physician: {
+                      $arrayElemAt: [
+                        {
+                          $filter: {
+                            input: '$physicianDetails',
+                            as: 'physician',
+                            cond: { $eq: ['$$physician._id', '$$requisition.physicianId'] },
+                          },
+                        },
+                        0,
+                      ],
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          physicianDetails: 0, // Remove the intermediate lookup array for physicians
+        },
+      },
     ]).exec();
+    
 
     if (!patient || patient.length === 0) {
       console.warn('Patient not found:', params.id);

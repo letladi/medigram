@@ -4,7 +4,6 @@ import { PhysicianWithStringId } from '@/types';
 
 interface PhysicianCardProps {
   physician: PhysicianWithStringId;
-  onAddClick: () => void;
 }
 
 export default function PhysicianCard({ physician }: PhysicianCardProps) {

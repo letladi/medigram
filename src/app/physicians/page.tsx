@@ -8,6 +8,7 @@ import Modal from '@/components/Modal'
 import { SearchInput } from '@/components/FormInputs'
 import debounce from 'lodash/debounce'
 import { useModal } from '@/components/ModalProvider'
+import SpinningLoader from '@/components/SpinningLoader'
 
 
 export default function PhysiciansPage() {
@@ -37,9 +38,7 @@ export default function PhysiciansPage() {
   };
 
   const filteredPhysicians = physicians?.filter(physician => 
-    physician.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    physician.specialization.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    physician.email.toLowerCase().includes(searchTerm.toLowerCase())
+    physician.name.toLowerCase().includes(searchTerm.toLowerCase()) 
   );
 
   return (
@@ -52,14 +51,12 @@ export default function PhysiciansPage() {
           label=""
           type="text"
           onChange={handleSearchChange}
-          placeholder="Search physicians"
+          placeholder="Filter physicians"
         />
       </div>
 
       {isLoading && (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-500"></div>
-        </div>
+        <SpinningLoader/>
       )}
 
       {error && (
