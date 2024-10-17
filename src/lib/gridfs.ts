@@ -1,14 +1,24 @@
-import { GridFSBucket, MongoClient } from 'mongodb';
-import clientPromise from './mongodb';
+import { GridFSBucket, MongoClient } from "mongodb";
+import clientPromise from "./mongodb";
 
 let bucket: GridFSBucket | null = null;
 
 export async function getGridFSBucket() {
-  if (bucket) return bucket;
+  if (bucket) {
+    console.log("Returning existing GridFS bucket");
+    return bucket;
+  }
 
-  const client: MongoClient = await clientPromise;
-  const db = client.db('medigram');
-  bucket = new GridFSBucket(db, { bucketName: 'avatars' });
-
-  return bucket;
+  try {
+    console.log("Initializing new GridFS bucket");
+    const client: MongoClient = await clientPromise;
+    const dbName = process.env.MONGODB_DB_NAME || "medigram";
+    const db = client.db(dbName);
+    bucket = new GridFSBucket(db, { bucketName: "avatars" });
+    console.log("GridFS bucket initialized successfully");
+    return bucket;
+  } catch (error) {
+    console.error("Error initializing GridFS bucket:", error);
+    throw error;
+  }
 }

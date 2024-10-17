@@ -73,8 +73,26 @@ export async function POST(request: NextRequest) {
   await connectMongoDB();
   const bucket = await getGridFSBucket();
 
+  console.log('fs-bucket', bucket)
+
   try {
-    const { fields, avatarBuffer, avatarName } = await parseFormData(request);
+    const formData = await request.formData();
+    const fields: Record<string, string> = {};
+    let avatarBuffer: Buffer | undefined;
+    let avatarName: string | undefined;
+
+    formData.forEach((value, key) => {
+      if (key === 'avatar' && value instanceof Blob) {
+        avatarName = value.name || 'avatar';
+      } else {
+        fields[key] = value.toString();
+      }
+    });
+
+    const avatarFile = formData.get('avatar');
+    if (avatarFile instanceof Blob) {
+      avatarBuffer = Buffer.from(await avatarFile.arrayBuffer());
+    }
 
     const { name, specialization, street, city, province, postalCode, licenseNumber } = fields;
     let avatarUrl = null;
@@ -83,11 +101,11 @@ export async function POST(request: NextRequest) {
     if (avatarBuffer && avatarName) {
       const uploadStream = bucket.openUploadStream(avatarName);
       const bufferStream = Readable.from(avatarBuffer);
-      bufferStream.pipe(uploadStream);
-
+      
       await new Promise((resolve, reject) => {
-        uploadStream.on('finish', resolve);
-        uploadStream.on('error', reject);
+        bufferStream.pipe(uploadStream)
+          .on('finish', resolve)
+          .on('error', reject);
       });
 
       avatarUrl = `/api/avatars/${uploadStream.id}`;
@@ -101,7 +119,7 @@ export async function POST(request: NextRequest) {
     const newPhysician = new PhysicianModel({
       name,
       specialization,
-      addressId: savedAddress._id, // Reference the address ID
+      addressId: savedAddress._id,
       licenseNumber,
       avatarUrl,
       createdAt: new Date(),
@@ -109,6 +127,7 @@ export async function POST(request: NextRequest) {
     });
 
     const savedPhysician = await newPhysician.save();
+    
     return NextResponse.json({ id: savedPhysician._id.toString() }, { status: 201 });
   } catch (error) {
     console.error('Error creating physician:', error);

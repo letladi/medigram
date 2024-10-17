@@ -1,4 +1,4 @@
-import { Schema, model, models, Document, Model } from "mongoose";
+import { Schema, model, models, Model } from "mongoose";
 import { Test } from "@/types";
 
 /** Test Schema */
