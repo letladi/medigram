@@ -1,4 +1,4 @@
-name: CI/CD for Next.js
+name: CI
 
 on:
   push:
@@ -17,50 +17,21 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x] # Use a recent LTS version for Next.js
+        node-version: [14.x]
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - run: npm install -g pnpm
+      - run: pnpm install
+      - run: pnpm build
+
+      - name: rsync deployments
+        uses: burnett01/rsync-deployments@5.1
         with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Install dependencies
-        run: npm install -g pnpm && pnpm install
-
-      - name: Build Next.js app
-        run: pnpm build
-
-      - name: Archive production-ready build files
-        run: tar -czf nextjs-build.tar.gz .next public package.json pnpm-lock.yaml
-
-      - name: Copy build to server
-        uses: appleboy/scp-action@v0.1.4 # Use a valid version of the scp action
-        with:
-          host: ec2-54-197-61-157.compute-1.amazonaws.com
-          username: ubuntu
-          key: ${{ secrets.DEMO_KEY }}
-          source: nextjs-build.tar.gz
-          target: /tmp/
-
-      - name: Deploy on server
-        uses: appleboy/ssh-action@v0.1.6 # Use a valid version of the ssh action
-        with:
-          host: ec2-54-197-61-157.compute-1.amazonaws.com
-          username: ubuntu
-          key: ${{ secrets.DEMO_KEY }}
-          script: |
-            # Extract the build on the server
-            tar -xzf /tmp/nextjs-build.tar.gz -C /var/www/demo
-
-            # Move to the project directory and install production dependencies
-            cd /var/www/demo
-            sudo docker compose up -d
-            echo "MONGODB_URI=${{ secrets.MONGODB_URI }}" >> .env
-            pnpm install --frozen-lockfile --prod
-
-            # Restart your application using pm2 (ensure pm2 is installed and configured)
-            pm2 restart demo || pm2 start pnpm --name demo -- start
+          switches: -avzr --delete
+          path: ./*
+          remote_path: /var/www/demo/
+          remote_host: ec2-54-197-61-157.compute-1.amazonaws.com
+          remote_user: ubuntu
+          remote_key: "${{ secrets.DEMO_KEY }}"
