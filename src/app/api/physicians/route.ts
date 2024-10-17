@@ -15,13 +15,19 @@ async function parseFormData(request: NextRequest) {
   let avatarBuffer: Buffer | undefined;
   let avatarName: string | undefined;
 
-  for (const [key, value] of formData.entries()) {
+  formData.forEach((value, key) => {
     if (key === 'avatar' && value instanceof Blob) {
-      avatarBuffer = Buffer.from(await value.arrayBuffer());
+      // We'll handle the Blob conversion to Buffer asynchronously later
       avatarName = (value as any).name || 'avatar';
     } else {
       fields[key] = value.toString();
     }
+  });
+
+  // Handle Blob to Buffer conversion asynchronously
+  const avatarFile = formData.get('avatar');
+  if (avatarFile instanceof Blob) {
+    avatarBuffer = Buffer.from(await avatarFile.arrayBuffer());
   }
 
   return { fields, avatarBuffer, avatarName };
