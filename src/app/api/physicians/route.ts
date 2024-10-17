@@ -7,33 +7,6 @@ import { Readable } from 'stream';
 import { ObjectId } from 'mongodb';
 
 /**
- * Helper to parse form data from a Next.js request.
- */
-async function parseFormData(request: NextRequest) {
-  const formData = await request.formData();
-  const fields: Record<string, string> = {};
-  let avatarBuffer: Buffer | undefined;
-  let avatarName: string | undefined;
-
-  formData.forEach((value, key) => {
-    if (key === 'avatar' && value instanceof Blob) {
-      // We'll handle the Blob conversion to Buffer asynchronously later
-      avatarName = (value as any).name || 'avatar';
-    } else {
-      fields[key] = value.toString();
-    }
-  });
-
-  // Handle Blob to Buffer conversion asynchronously
-  const avatarFile = formData.get('avatar');
-  if (avatarFile instanceof Blob) {
-    avatarBuffer = Buffer.from(await avatarFile.arrayBuffer());
-  }
-
-  return { fields, avatarBuffer, avatarName };
-}
-
-/**
  * GET: Retrieve all physicians with their related patients and requisitions.
  */
 export async function GET() {
