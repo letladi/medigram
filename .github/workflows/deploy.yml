@@ -58,6 +58,8 @@ jobs:
 
             # Move to the project directory and install production dependencies
             cd /var/www/demo
+            sudo docker compose up -d
+            echo "MONGODB_URI=${{ secrets.MONGODB_URI }}" >> .env
             pnpm install --frozen-lockfile --prod
 
             # Restart your application using pm2 (ensure pm2 is installed and configured)

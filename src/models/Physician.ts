@@ -12,5 +12,5 @@ const physicianSchema = new Schema<Physician>({
   updatedAt: { type: Date, default: Date.now },
 });
 
-export const PhysicianModel: Model<Document & Physician> =
-  models.Physician || model<Document & Physician>('Physician', physicianSchema);
+export const PhysicianModel: Model<Physician> =
+  models.Physician || model<Physician>('Physician', physicianSchema);

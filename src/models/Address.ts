@@ -9,7 +9,7 @@ const addressSchema = new Schema<Address>({
   postalCode: { type: String, required: true },
 });
 
-export const AddressModel: Model<Document & Address> =
-  models.Address || model<Document & Address>('Address', addressSchema);
+export const AddressModel: Model<Address> =
+  models.Address || model<Address>('Address', addressSchema);
 
 export { addressSchema }; // Export the schema to reuse in other models

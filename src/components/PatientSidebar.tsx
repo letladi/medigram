@@ -27,7 +27,6 @@ export default function PatientSidebar({ patient, onAddRequisition }: PatientSid
           <h3 className="font-semibold mb-1">Address:</h3>
           <p>{patient.address?.street}</p>
           <p>{patient.address?.city}, {patient.address?.province} {patient.address?.postalCode}</p>
-          <p>{patient.address?.country}</p>
         </div>
         <div className="flex justify-between mb-4">
           <div className="text-center">

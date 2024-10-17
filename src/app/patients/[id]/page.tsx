@@ -62,7 +62,7 @@ export default function PatientPage() {
                       .filter((test) => test.requisitionId === requisition._id)
                       .map((test) => (
                         <li key={test._id} className="text-gray-300">
-                          {test.name} (Created: {new Date(test.createdAt).toLocaleDateString()})
+                          {test.name} 
                         </li>
                       ))}
                   </ul>

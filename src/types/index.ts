@@ -58,6 +58,7 @@ export type TestWithStringId = Omit<Test, '_id' | 'requisitionId' | 'patientId'>
   _id: string; 
   requisitionId: string; 
   patientId: string; 
+  createdAt: Date;
 };
 
 /** Requisition Interface */
@@ -74,4 +75,6 @@ export type RequisitionWithStringId = Omit<Requisition, '_id' | 'patientId' | 'p
   _id: string;
   patientId: string;
   physicianId: string;
+  physician: PhysicianWithStringId;
+  tests: TestWithStringId[];
 };

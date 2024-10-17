@@ -11,5 +11,5 @@ const requisitionSchema = new Schema<Requisition>({
   updatedAt: { type: Date, default: Date.now },
 });
 
-export const RequisitionModel: Model<Document & Requisition> =
-  models.Requisition || model<Document & Requisition>('Requisition', requisitionSchema);
+export const RequisitionModel: Model<Requisition> =
+  models.Requisition || model< Requisition>('Requisition', requisitionSchema);
