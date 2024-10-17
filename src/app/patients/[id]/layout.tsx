@@ -4,7 +4,6 @@ import { useParams, useRouter } from "next/navigation";
 import { usePatient } from "@/hooks/usePatient";
 import PatientSidebar from "@/components/PatientSidebar";
 import SpinningLoader from "@/components/SpinningLoader";
-import { Toaster } from 'react-hot-toast';
 
 export default function PatientPage({ children }: { children: React.ReactNode }) {
   const { id } = useParams() as { id: string };
@@ -34,7 +33,6 @@ export default function PatientPage({ children }: { children: React.ReactNode })
       <div className="w-3/4 p-4 overflow-y-auto">
         {children}
       </div>
-      <Toaster position="top-right" />
     </div>
   );
 }

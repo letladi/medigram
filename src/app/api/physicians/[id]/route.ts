@@ -10,9 +10,30 @@ export async function GET(
   try {
     const client = await clientPromise;
     const db = client.db("medigram");
-    const physician = await db.collection<Physician>("physicians").findOne({
-      _id: new ObjectId(params.id)
-    });
+    
+    const physicianAggregation = await db.collection<Physician>("physicians").aggregate([
+      {
+        $match: {
+          _id: new ObjectId(params.id)
+        }
+      },
+      {
+        $lookup: {
+          from: "addresses",
+          localField: "addressId",
+          foreignField: "_id",
+          as: "address"
+        }
+      },
+      {
+        $unwind: {
+          path: "$address",
+          preserveNullAndEmptyArrays: true
+        }
+      }
+    ]).toArray();
+
+    const physician = physicianAggregation[0];
 
     if (!physician) {
       return NextResponse.json({ error: 'Physician not found' }, { status: 404 });

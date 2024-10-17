@@ -79,10 +79,10 @@ export const FileInput: React.FC<FileInputProps> = ({
         <img
           src={previewUrl}
           alt="Preview"
-          className="w-24 h-24 rounded-full object-cover mr-4 border-2 border-indigo-500"
+          className="w-32 h-32 rounded-full object-cover mr-4 border-2 border-indigo-500"
         />
       ) : (
-        <div className="w-24 h-24 rounded-full bg-gray-600 flex items-center justify-center mr-4">
+        <div className="w-32 h-32 rounded-full bg-gray-600 flex items-center justify-center mr-4">
           <PhotoIcon className="h-8 w-8 text-gray-400" />
         </div>
       )}
