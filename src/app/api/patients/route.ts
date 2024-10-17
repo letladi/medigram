@@ -12,17 +12,19 @@ import { connectMongoDB } from '@/lib/mongoose';
 async function parseFormData(request: NextRequest) {
   const formData = await request.formData();
   const fields: Record<string, string> = {};
-  let avatar: File | undefined;
+  let avatarBlob: Blob | undefined;
+  let avatarName: string | undefined;
 
   formData.forEach((value, key) => {
-    if (key === 'avatar' && value instanceof File) {
-      avatar = value;
+    if (key === 'avatar' && value instanceof Blob) {
+      avatarBlob = value;
+      avatarName = (value as any).name || 'avatar';
     } else {
       fields[key] = value.toString();
     }
   });
 
-  return { fields, avatar };
+  return { fields, avatarBlob, avatarName };
 }
 
 /**
@@ -32,21 +34,21 @@ export async function POST(request: NextRequest) {
   await connectMongoDB();
   try {
     const bucket = await getGridFSBucket();
-    const { fields, avatar } = await parseFormData(request);
+    const { fields, avatarBlob, avatarName } = await parseFormData(request);
 
     const { name, street, city, province, postalCode } = fields;
     let avatarUrl = null;
 
     // Upload avatar to GridFS if present
-    if (avatar) {
-      const arrayBuffer = await avatar.arrayBuffer();
-      const uploadStream = bucket.openUploadStream(avatar.name);
+    if (avatarBlob && avatarName) {
+      const arrayBuffer = await avatarBlob.arrayBuffer();
+      const uploadStream = bucket.openUploadStream(avatarName);
       const bufferStream = Readable.from(Buffer.from(arrayBuffer));
-      bufferStream.pipe(uploadStream);
 
       await new Promise((resolve, reject) => {
-        uploadStream.on('finish', resolve);
-        uploadStream.on('error', reject);
+        bufferStream.pipe(uploadStream)
+          .on('finish', resolve)
+          .on('error', reject);
       });
 
       avatarUrl = `/api/avatars/${uploadStream.id}`;
@@ -83,7 +85,7 @@ export async function GET() {
     const patients = await PatientModel.aggregate([
       {
         $lookup: {
-          from: 'requisitions', // Collection name for requisitions
+          from: 'requisitions',
           localField: '_id',
           foreignField: 'patientId',
           as: 'requisitions',
@@ -91,7 +93,7 @@ export async function GET() {
       },
       {
         $lookup: {
-          from: 'tests', // Collection name for tests
+          from: 'tests',
           localField: 'requisitions._id',
           foreignField: 'requisitionId',
           as: 'tests',
@@ -99,7 +101,7 @@ export async function GET() {
       },
       {
         $lookup: {
-          from: 'addresses', // Collection name for addresses
+          from: 'addresses',
           localField: 'addressId',
           foreignField: '_id',
           as: 'address',
