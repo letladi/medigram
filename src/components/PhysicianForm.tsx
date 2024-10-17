@@ -205,7 +205,7 @@ export default function PhysicianForm({ onSubmit }: PhysicianFormProps) {
           disabled={isLoading}
         >
           {submitSuccess
-            ? "Patient Added Successfully"
+            ? "Physician Added Successfully"
             : isLoading
             ? "Adding..."
             : "Add Physician"}

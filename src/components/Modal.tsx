@@ -36,7 +36,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-md sm:max-w-xl transform overflow-hidden rounded-lg bg-gray-900 p-6 text-left align-middle shadow-lg transition-all">
+              <Dialog.Panel className="w-full max-w-md sm:max-w-xl md:max-w-2xl lg:max-w-4xl xl:max-w-6xl transform overflow-hidden rounded-lg bg-gray-900 p-6 text-left align-middle shadow-lg transition-all">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                   <Dialog.Title
