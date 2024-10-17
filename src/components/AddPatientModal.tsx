@@ -1,46 +1,50 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Dialog, Transition } from '@headlessui/react'
-import { Fragment } from 'react'
-import { XMarkIcon } from '@heroicons/react/24/outline'
+import { useState } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import { Fragment } from "react";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 
 interface AddPatientModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onPatientAdded: () => void
+  isOpen: boolean;
+  onClose: () => void;
+  onPatientAdded: () => void;
 }
 
-export default function AddPatientModal({ isOpen, onClose, onPatientAdded }: AddPatientModalProps) {
-  const [name, setName] = useState('')
-  const [address, setAddress] = useState('')
-  const [avatar, setAvatar] = useState<File | null>(null)
+export default function AddPatientModal({
+  isOpen,
+  onClose,
+  onPatientAdded,
+}: AddPatientModalProps) {
+  const [name, setName] = useState("");
+  const [address, setAddress] = useState("");
+  const [avatar, setAvatar] = useState<File | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const formData = new FormData()
-    formData.append('name', name)
-    formData.append('address', address)
-    if (avatar) formData.append('avatar', avatar)
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("address", address);
+    if (avatar) formData.append("avatar", avatar);
 
     try {
-      const response = await fetch('/api/patients', {
-        method: 'POST',
+      const response = await fetch("/api/patients", {
+        method: "POST",
         body: formData,
-      })
+      });
       if (response.ok) {
-        onPatientAdded()
-        onClose()
-        setName('')
-        setAddress('')
-        setAvatar(null)
+        onPatientAdded();
+        onClose();
+        setName("");
+        setAddress("");
+        setAvatar(null);
       } else {
-        console.error('Failed to add patient')
+        console.error("Failed to add patient");
       }
     } catch (error) {
-      console.error('Error adding patient:', error)
+      console.error("Error adding patient:", error);
     }
-  }
+  };
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -83,7 +87,10 @@ export default function AddPatientModal({ isOpen, onClose, onPatientAdded }: Add
                 </Dialog.Title>
                 <form onSubmit={handleSubmit} className="mt-4 space-y-4">
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                    <label
+                      htmlFor="name"
+                      className="block text-sm font-medium text-gray-700"
+                    >
                       Name
                     </label>
                     <input
@@ -96,7 +103,10 @@ export default function AddPatientModal({ isOpen, onClose, onPatientAdded }: Add
                     />
                   </div>
                   <div>
-                    <label htmlFor="address" className="block text-sm font-medium text-gray-700">
+                    <label
+                      htmlFor="address"
+                      className="block text-sm font-medium text-gray-700"
+                    >
                       Address
                     </label>
                     <input
@@ -138,5 +148,5 @@ export default function AddPatientModal({ isOpen, onClose, onPatientAdded }: Add
         </div>
       </Dialog>
     </Transition>
-  )
+  );
 }

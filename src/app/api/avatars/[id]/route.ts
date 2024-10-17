@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getGridFSBucket } from '@/lib/gridfs';
-import { ObjectId } from 'mongodb';
-import { Readable } from 'stream';
+import { NextRequest, NextResponse } from "next/server";
+import { getGridFSBucket } from "@/lib/gridfs";
+import { ObjectId } from "mongodb";
+import { Readable } from "stream";
 
 /**
  * Helper: Convert GridFSBucketReadStream to Buffer.
@@ -9,9 +9,9 @@ import { Readable } from 'stream';
 async function streamToBuffer(stream: Readable): Promise<Buffer> {
   const chunks: Buffer[] = [];
   return new Promise((resolve, reject) => {
-    stream.on('data', (chunk) => chunks.push(chunk));
-    stream.on('end', () => resolve(Buffer.concat(chunks)));
-    stream.on('error', reject);
+    stream.on("data", (chunk) => chunks.push(chunk));
+    stream.on("end", () => resolve(Buffer.concat(chunks)));
+    stream.on("error", reject);
   });
 }
 
@@ -20,7 +20,7 @@ async function streamToBuffer(stream: Readable): Promise<Buffer> {
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   const bucket = await getGridFSBucket();
 
@@ -32,13 +32,13 @@ export async function GET(
 
     return new NextResponse(buffer, {
       headers: {
-        'Content-Type': 'image/jpeg',
-        'Content-Length': buffer.length.toString(),
-        'Cache-Control': 'public, max-age=31536000, immutable',
+        "Content-Type": "image/jpeg",
+        "Content-Length": buffer.length.toString(),
+        "Cache-Control": "public, max-age=31536000, immutable",
       },
     });
   } catch (error) {
-    console.error('Error fetching avatar:', error);
-    return NextResponse.json({ error: 'Avatar not found' }, { status: 404 });
+    console.error("Error fetching avatar:", error);
+    return NextResponse.json({ error: "Avatar not found" }, { status: 404 });
   }
 }

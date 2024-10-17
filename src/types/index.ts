@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb';
+import { ObjectId } from "mongodb";
 
 /** Address Interface */
 export interface Address {
@@ -9,8 +9,8 @@ export interface Address {
   postalCode: string;
 }
 
-export type AddressWithStringId = Omit<Address, '_id'> & { 
-  _id: string; 
+export type AddressWithStringId = Omit<Address, "_id"> & {
+  _id: string;
 };
 
 /** Patient Interface */
@@ -22,9 +22,9 @@ export interface Patient {
   createdAt?: Date;
   updatedAt?: Date;
 }
-export type PatientWithStringId = Omit<Patient, '_id' | 'addressId'> & { 
-  _id: string; 
-  addressId: string; 
+export type PatientWithStringId = Omit<Patient, "_id" | "addressId"> & {
+  _id: string;
+  addressId: string;
   address: Address;
   tests: TestWithStringId[];
   requisitions: RequisitionWithStringId[];
@@ -41,9 +41,9 @@ export interface Physician {
   createdAt?: Date;
   updatedAt?: Date;
 }
-export type PhysicianWithStringId = Omit<Physician, '_id' | 'addressId'> & { 
-  _id: string; 
-  addressId: string; 
+export type PhysicianWithStringId = Omit<Physician, "_id" | "addressId"> & {
+  _id: string;
+  addressId: string;
   patients: PatientWithStringId[];
   requisitions: RequisitionWithStringId[];
   address: AddressWithStringId;
@@ -56,13 +56,16 @@ export interface Test {
   description: string;
   normalRange?: string;
   unit?: string;
-  requisitionId: ObjectId;  // Reference to Requisition
-  patientId: ObjectId;      // Reference to the Patient/User
+  requisitionId: ObjectId; // Reference to Requisition
+  patientId: ObjectId; // Reference to the Patient/User
 }
-export type TestWithStringId = Omit<Test, '_id' | 'requisitionId' | 'patientId'> & { 
-  _id: string; 
-  requisitionId: string; 
-  patientId: string; 
+export type TestWithStringId = Omit<
+  Test,
+  "_id" | "requisitionId" | "patientId"
+> & {
+  _id: string;
+  requisitionId: string;
+  patientId: string;
   createdAt: Date;
 };
 
@@ -72,11 +75,14 @@ export interface Requisition {
   patientId: ObjectId;
   physicianId: ObjectId;
   dateSubmitted: Date;
-  status: 'Pending' | 'Completed' | 'Cancelled';
+  status: "Pending" | "Completed" | "Cancelled";
   createdAt?: Date;
   updatedAt?: Date;
 }
-export type RequisitionWithStringId = Omit<Requisition, '_id' | 'patientId' | 'physicianId'> & {
+export type RequisitionWithStringId = Omit<
+  Requisition,
+  "_id" | "patientId" | "physicianId"
+> & {
   _id: string;
   patientId: string;
   physicianId: string;

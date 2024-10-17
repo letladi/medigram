@@ -66,7 +66,7 @@ export default function PatientCard({ patient, onAddClick }: PatientCardProps) {
           {
             "w-56 px-4": isHovered,
             "w-12": !isHovered,
-          }
+          },
         )}
       >
         {isHovered && <span className=" min-w-44">Add Requisition</span>}

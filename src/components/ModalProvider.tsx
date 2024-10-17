@@ -1,6 +1,6 @@
-'use client'
+"use client";
 
-import React, { createContext, useState, useContext } from 'react'
+import React, { createContext, useState, useContext } from "react";
 
 interface ModalContextType {
   isModalOpen: boolean;
@@ -22,7 +22,7 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
 export function useModal() {
   const context = useContext(ModalContext);
   if (context === undefined) {
-    throw new Error('useModal must be used within a ModalProvider');
+    throw new Error("useModal must be used within a ModalProvider");
   }
   return context;
 }

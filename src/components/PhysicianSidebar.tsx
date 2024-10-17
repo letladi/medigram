@@ -1,6 +1,6 @@
-import React from 'react';
-import Image from 'next/image';
-import { PhysicianWithStringId } from '@/types';
+import React from "react";
+import Image from "next/image";
+import { PhysicianWithStringId } from "@/types";
 
 interface PhysicianSidebarProps {
   physician: PhysicianWithStringId;
@@ -11,7 +11,7 @@ export default function PhysicianSidebar({ physician }: PhysicianSidebarProps) {
     <div className="rounded-lg overflow-hidden max-h-full flex flex-col border">
       <div className="relative w-full pt-[75%] flex-shrink-0">
         <Image
-          src={physician.avatarUrl || '/avatars/physician-avatar.png'}
+          src={physician.avatarUrl || "/avatars/physician-avatar.png"}
           alt={physician.name}
           layout="fill"
           objectFit="cover"
@@ -32,9 +32,11 @@ export default function PhysicianSidebar({ physician }: PhysicianSidebarProps) {
         <div className="mb-4 text-sm">
           <h3 className="font-semibold mb-1">Address:</h3>
           <p>{physician.address?.street}</p>
-          <p>{physician.address?.city}, {physician.address?.province} {physician.address?.postalCode}</p>
+          <p>
+            {physician.address?.city}, {physician.address?.province}{" "}
+            {physician.address?.postalCode}
+          </p>
         </div>
-
       </div>
     </div>
   );

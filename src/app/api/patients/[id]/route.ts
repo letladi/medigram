@@ -1,16 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { connectMongoDB } from '@/lib/mongoose';
-import { ObjectId } from 'mongodb';
-import { PatientModel } from '@/models/Patient'; // Ensure this import is correct
+import { NextRequest, NextResponse } from "next/server";
+import { connectMongoDB } from "@/lib/mongoose";
+import { ObjectId } from "mongodb";
+import { PatientModel } from "@/models/Patient"; // Ensure this import is correct
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
-  console.log('GET request received for patient:', params.id);
+  console.log("GET request received for patient:", params.id);
 
   if (!ObjectId.isValid(params.id)) {
-    return NextResponse.json({ error: 'Invalid patient ID' }, { status: 400 });
+    return NextResponse.json({ error: "Invalid patient ID" }, { status: 400 });
   }
 
   await connectMongoDB();
@@ -22,39 +22,39 @@ export async function GET(
       },
       {
         $lookup: {
-          from: 'requisitions',
-          localField: '_id',
-          foreignField: 'patientId',
-          as: 'requisitions',
+          from: "requisitions",
+          localField: "_id",
+          foreignField: "patientId",
+          as: "requisitions",
         },
       },
       {
         $lookup: {
-          from: 'physicians',
-          localField: 'requisitions.physicianId',
-          foreignField: '_id',
-          as: 'physicianDetails',
+          from: "physicians",
+          localField: "requisitions.physicianId",
+          foreignField: "_id",
+          as: "physicianDetails",
         },
       },
       {
         $lookup: {
-          from: 'tests',
-          localField: 'requisitions._id',
-          foreignField: 'requisitionId',
-          as: 'tests',
+          from: "tests",
+          localField: "requisitions._id",
+          foreignField: "requisitionId",
+          as: "tests",
         },
       },
       {
         $lookup: {
-          from: 'addresses',
-          localField: 'addressId',
-          foreignField: '_id',
-          as: 'address',
+          from: "addresses",
+          localField: "addressId",
+          foreignField: "_id",
+          as: "address",
         },
       },
       {
         $unwind: {
-          path: '$address',
+          path: "$address",
           preserveNullAndEmptyArrays: true,
         },
       },
@@ -62,19 +62,24 @@ export async function GET(
         $addFields: {
           requisitions: {
             $map: {
-              input: '$requisitions',
-              as: 'requisition',
+              input: "$requisitions",
+              as: "requisition",
               in: {
                 $mergeObjects: [
-                  '$$requisition',
+                  "$$requisition",
                   {
                     physician: {
                       $arrayElemAt: [
                         {
                           $filter: {
-                            input: '$physicianDetails',
-                            as: 'physician',
-                            cond: { $eq: ['$$physician._id', '$$requisition.physicianId'] },
+                            input: "$physicianDetails",
+                            as: "physician",
+                            cond: {
+                              $eq: [
+                                "$$physician._id",
+                                "$$requisition.physicianId",
+                              ],
+                            },
                           },
                         },
                         0,
@@ -93,20 +98,22 @@ export async function GET(
         },
       },
     ]).exec();
-    
 
     if (!patient || patient.length === 0) {
-      console.warn('Patient not found:', params.id);
-      return NextResponse.json({ error: 'Patient not found' }, { status: 404 });
+      console.warn("Patient not found:", params.id);
+      return NextResponse.json({ error: "Patient not found" }, { status: 404 });
     }
 
-    console.log('Patient found:', patient[0]);
+    console.log("Patient found:", patient[0]);
     return NextResponse.json(patient[0]);
   } catch (error) {
-    console.error('Error fetching patient:', error);
+    console.error("Error fetching patient:", error);
     return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
+      {
+        error: "Internal Server Error",
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 },
     );
   }
 }

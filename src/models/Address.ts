@@ -1,5 +1,5 @@
-import { Schema, model, models, Model } from 'mongoose';
-import { Address } from '@/types';
+import { Schema, model, models, Model } from "mongoose";
+import { Address } from "@/types";
 
 /** Address Schema */
 const addressSchema = new Schema<Address>({
@@ -10,6 +10,6 @@ const addressSchema = new Schema<Address>({
 });
 
 export const AddressModel: Model<Address> =
-  models.Address || model<Address>('Address', addressSchema);
+  models.Address || model<Address>("Address", addressSchema);
 
 export { addressSchema }; // Export the schema to reuse in other models

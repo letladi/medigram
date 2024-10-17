@@ -1,6 +1,6 @@
-import { Fragment } from 'react'
-import { Dialog, Transition } from '@headlessui/react'
-import { XMarkIcon } from '@heroicons/react/24/outline'
+import { Fragment } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 
 interface SlideOverProps {
   isOpen: boolean;
@@ -9,7 +9,12 @@ interface SlideOverProps {
   children: React.ReactNode;
 }
 
-export default function SlideOver({ isOpen, onClose, title, children }: SlideOverProps) {
+export default function SlideOver({
+  isOpen,
+  onClose,
+  title,
+  children,
+}: SlideOverProps) {
   return (
     <Transition.Root show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-10" onClose={onClose}>
@@ -67,5 +72,5 @@ export default function SlideOver({ isOpen, onClose, title, children }: SlideOve
         </div>
       </Dialog>
     </Transition.Root>
-  )
+  );
 }

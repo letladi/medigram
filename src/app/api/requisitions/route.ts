@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { connectMongoDB } from '@/lib/mongoose';
-import { RequisitionModel } from '@/models/Requisition';
-import { TestModel } from '@/models/Test';
-import { PatientModel } from '@/models/Patient';
-import { PhysicianModel } from '@/models/Physician';
-import isEmpty from 'lodash/isEmpty';
+import { NextRequest, NextResponse } from "next/server";
+import { connectMongoDB } from "@/lib/mongoose";
+import { RequisitionModel } from "@/models/Requisition";
+import { TestModel } from "@/models/Test";
+import { PatientModel } from "@/models/Patient";
+import { PhysicianModel } from "@/models/Physician";
+import isEmpty from "lodash/isEmpty";
 
 /**
  * Helper to parse form data from a Next.js request.
@@ -14,8 +14,8 @@ async function parseFormData(request: NextRequest) {
   const fields: Record<string, string | string[]> = {};
 
   formData.forEach((value, key) => {
-    if (key.startsWith('testNames[') || key.startsWith('samples[')) {
-      const arrayKey = key.split('[')[0];
+    if (key.startsWith("testNames[") || key.startsWith("samples[")) {
+      const arrayKey = key.split("[")[0];
       if (!fields[arrayKey]) {
         fields[arrayKey] = [];
       }
@@ -35,15 +35,25 @@ export async function POST(request: NextRequest) {
   await connectMongoDB();
   try {
     const fields = await parseFormData(request);
-    console.log('Received form data:', fields);
+    console.log("Received form data:", fields);
 
     const { patientId, physicianId } = fields;
     const testNames = fields.testNames as string[];
     const samples = fields.samples as string[];
 
     // Validate required fields
-    if (!patientId || !physicianId || !Array.isArray(testNames) || isEmpty(testNames) || !Array.isArray(samples) || isEmpty(samples)) {
-      return NextResponse.json({ error: 'Missing required fields or empty arrays' }, { status: 400 });
+    if (
+      !patientId ||
+      !physicianId ||
+      !Array.isArray(testNames) ||
+      isEmpty(testNames) ||
+      !Array.isArray(samples) ||
+      isEmpty(samples)
+    ) {
+      return NextResponse.json(
+        { error: "Missing required fields or empty arrays" },
+        { status: 400 },
+      );
     }
 
     // Validate patient and physician existence
@@ -51,11 +61,14 @@ export async function POST(request: NextRequest) {
     const physician = await PhysicianModel.findById(physicianId);
 
     if (!patient) {
-      return NextResponse.json({ error: 'Patient not found' }, { status: 404 });
+      return NextResponse.json({ error: "Patient not found" }, { status: 404 });
     }
 
     if (!physician) {
-      return NextResponse.json({ error: 'Physician not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: "Physician not found" },
+        { status: 404 },
+      );
     }
 
     // Create requisition
@@ -63,7 +76,7 @@ export async function POST(request: NextRequest) {
       patientId,
       physicianId,
       dateSubmitted: new Date(),
-      status: 'Pending',
+      status: "Pending",
       samples,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -79,12 +92,21 @@ export async function POST(request: NextRequest) {
           patientId,
         });
         return newTest.save();
-      })
+      }),
     );
 
-    return NextResponse.json({ id: savedRequisition._id.toString() }, { status: 201 });
+    return NextResponse.json(
+      { id: savedRequisition._id.toString() },
+      { status: 201 },
+    );
   } catch (error) {
-    console.error('Error creating requisition:', error);
-    return NextResponse.json({ error: 'Internal Server Error', details: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    console.error("Error creating requisition:", error);
+    return NextResponse.json(
+      {
+        error: "Internal Server Error",
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 },
+    );
   }
 }

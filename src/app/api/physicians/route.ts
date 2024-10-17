@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { PhysicianModel } from '@/models/Physician';
-import { AddressModel } from '@/models/Address';
-import { connectMongoDB } from '@/lib/mongoose';
-import { getGridFSBucket } from '@/lib/gridfs';
-import { Readable } from 'stream';
-import { ObjectId } from 'mongodb';
+import { NextRequest, NextResponse } from "next/server";
+import { PhysicianModel } from "@/models/Physician";
+import { AddressModel } from "@/models/Address";
+import { connectMongoDB } from "@/lib/mongoose";
+import { getGridFSBucket } from "@/lib/gridfs";
+import { Readable } from "stream";
+import { ObjectId } from "mongodb";
 
 /**
  * GET: Retrieve all physicians with their related patients and requisitions.
@@ -16,26 +16,29 @@ export async function GET() {
     const physicians = await PhysicianModel.aggregate([
       {
         $lookup: {
-          from: 'requisitions',
-          localField: '_id',
-          foreignField: 'physicianId',
-          as: 'requisitions',
+          from: "requisitions",
+          localField: "_id",
+          foreignField: "physicianId",
+          as: "requisitions",
         },
       },
       {
         $lookup: {
-          from: 'patients',
-          localField: 'requisitions.patientId',
-          foreignField: '_id',
-          as: 'patients',
+          from: "patients",
+          localField: "requisitions.patientId",
+          foreignField: "_id",
+          as: "patients",
         },
       },
     ]);
 
     return NextResponse.json(physicians);
   } catch (error) {
-    console.error('Error fetching physicians:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error("Error fetching physicians:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -46,7 +49,7 @@ export async function POST(request: NextRequest) {
   await connectMongoDB();
   const bucket = await getGridFSBucket();
 
-  console.log('fs-bucket', bucket)
+  console.log("fs-bucket", bucket);
 
   try {
     const formData = await request.formData();
@@ -55,30 +58,39 @@ export async function POST(request: NextRequest) {
     let avatarName: string | undefined;
 
     formData.forEach((value, key) => {
-      if (key === 'avatar' && value instanceof Blob) {
-        avatarName = value.name || 'avatar';
+      if (key === "avatar" && value instanceof Blob) {
+        avatarName = value.name || "avatar";
       } else {
         fields[key] = value.toString();
       }
     });
 
-    const avatarFile = formData.get('avatar');
+    const avatarFile = formData.get("avatar");
     if (avatarFile instanceof Blob) {
       avatarBuffer = Buffer.from(await avatarFile.arrayBuffer());
     }
 
-    const { name, specialization, street, city, province, postalCode, licenseNumber } = fields;
+    const {
+      name,
+      specialization,
+      street,
+      city,
+      province,
+      postalCode,
+      licenseNumber,
+    } = fields;
     let avatarUrl = null;
 
     // Upload avatar to GridFS if available
     if (avatarBuffer && avatarName) {
       const uploadStream = bucket.openUploadStream(avatarName);
       const bufferStream = Readable.from(avatarBuffer);
-      
+
       await new Promise((resolve, reject) => {
-        bufferStream.pipe(uploadStream)
-          .on('finish', resolve)
-          .on('error', reject);
+        bufferStream
+          .pipe(uploadStream)
+          .on("finish", resolve)
+          .on("error", reject);
       });
 
       avatarUrl = `/api/avatars/${uploadStream.id}`;
@@ -100,11 +112,17 @@ export async function POST(request: NextRequest) {
     });
 
     const savedPhysician = await newPhysician.save();
-    
-    return NextResponse.json({ id: savedPhysician._id.toString() }, { status: 201 });
+
+    return NextResponse.json(
+      { id: savedPhysician._id.toString() },
+      { status: 201 },
+    );
   } catch (error) {
-    console.error('Error creating physician:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error("Error creating physician:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -114,10 +132,13 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   await connectMongoDB();
   const { searchParams } = new URL(request.url);
-  const id = searchParams.get('id');
+  const id = searchParams.get("id");
 
   if (!id) {
-    return NextResponse.json({ error: 'Physician ID is required' }, { status: 400 });
+    return NextResponse.json(
+      { error: "Physician ID is required" },
+      { status: 400 },
+    );
   }
 
   const bucket = await getGridFSBucket();
@@ -126,21 +147,27 @@ export async function DELETE(request: NextRequest) {
     const physician = await PhysicianModel.findById(id);
 
     if (!physician) {
-      return NextResponse.json({ error: 'Physician not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: "Physician not found" },
+        { status: 404 },
+      );
     }
 
     // Delete avatar from GridFS if available
     if (physician.avatarUrl) {
-      const avatarId = physician.avatarUrl.split('/').pop();
+      const avatarId = physician.avatarUrl.split("/").pop();
       await bucket.delete(new ObjectId(avatarId)).catch(console.error);
     }
 
     // Delete the associated address
     await AddressModel.deleteOne({ _id: physician.addressId });
     await PhysicianModel.deleteOne({ _id: id });
-    return NextResponse.json({ message: 'Physician deleted successfully' });
+    return NextResponse.json({ message: "Physician deleted successfully" });
   } catch (error) {
-    console.error('Error deleting physician:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error("Error deleting physician:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }

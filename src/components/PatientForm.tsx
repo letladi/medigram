@@ -3,7 +3,7 @@ import { TextInput, FileInput } from "./FormInputs";
 import { UserCircleIcon } from "@heroicons/react/24/solid";
 import { usePost } from "@/hooks/usePost";
 import clsx from "clsx";
-import Select from 'react-select';
+import Select from "react-select";
 
 interface PatientFormProps {
   onSubmit: () => void;
@@ -21,13 +21,19 @@ const SA_PROVINCES = [
   "Western Cape",
 ];
 
-const provinceOptions = SA_PROVINCES.map(province => ({ value: province, label: province }));
+const provinceOptions = SA_PROVINCES.map((province) => ({
+  value: province,
+  label: province,
+}));
 
 export default function PatientForm({ onSubmit }: PatientFormProps) {
   const [name, setName] = useState("");
   const [street, setStreet] = useState("");
   const [city, setCity] = useState("");
-  const [province, setProvince] = useState<{ value: string; label: string } | null>(null);
+  const [province, setProvince] = useState<{
+    value: string;
+    label: string;
+  } | null>(null);
   const [postalCode, setPostalCode] = useState("");
   const [avatar, setAvatar] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -48,7 +54,14 @@ export default function PatientForm({ onSubmit }: PatientFormProps) {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    const fields = { name, street, city, province: province?.value, postalCode, avatar };
+    const fields = {
+      name,
+      street,
+      city,
+      province: province?.value,
+      postalCode,
+      avatar,
+    };
 
     Object.entries(fields).forEach(([fieldName, fieldValue]) => {
       if (!fieldValue) newErrors[fieldName] = "required";
@@ -92,28 +105,35 @@ export default function PatientForm({ onSubmit }: PatientFormProps) {
   const selectStyles = {
     control: (provided: any) => ({
       ...provided,
-      backgroundColor: '#1F2937',
-      borderColor: '#374151',
-      color: '#D1D5DB',
-      minHeight: '42px', // Match the height of other inputs
+      backgroundColor: "#1F2937",
+      borderColor: "#374151",
+      color: "#D1D5DB",
+      minHeight: "42px", // Match the height of other inputs
     }),
     menu: (provided: any) => ({
       ...provided,
-      backgroundColor: '#1F2937',
+      backgroundColor: "#1F2937",
       zIndex: 9999,
     }),
     menuPortal: (provided: any) => ({
       ...provided,
       zIndex: 9999,
     }),
-    option: (provided: any, state: { isFocused: boolean; isSelected: boolean }) => ({
+    option: (
+      provided: any,
+      state: { isFocused: boolean; isSelected: boolean },
+    ) => ({
       ...provided,
-      backgroundColor: state.isFocused ? '#374151' : state.isSelected ? '#4B5563' : '#1F2937',
-      color: '#D1D5DB',
+      backgroundColor: state.isFocused
+        ? "#374151"
+        : state.isSelected
+          ? "#4B5563"
+          : "#1F2937",
+      color: "#D1D5DB",
     }),
     singleValue: (provided: any) => ({
       ...provided,
-      color: '#D1D5DB',
+      color: "#D1D5DB",
     }),
   };
 
@@ -161,10 +181,16 @@ export default function PatientForm({ onSubmit }: PatientFormProps) {
         />
 
         <div className="relative">
-          <label htmlFor="province" className="block text-sm font-medium text-gray-300 mb-1">
-            Province* {errors.province && (
-            <span className="mt-1 text-sm text-red-500 ml-4">{errors.province}</span>
-          )}
+          <label
+            htmlFor="province"
+            className="block text-sm font-medium text-gray-300 mb-1"
+          >
+            Province*{" "}
+            {errors.province && (
+              <span className="mt-1 text-sm text-red-500 ml-4">
+                {errors.province}
+              </span>
+            )}
           </label>
           <Select
             id="province"
@@ -175,7 +201,6 @@ export default function PatientForm({ onSubmit }: PatientFormProps) {
             menuPortalTarget={document.body}
             menuPosition="fixed"
           />
-          
         </div>
 
         <TextInput
@@ -200,15 +225,15 @@ export default function PatientForm({ onSubmit }: PatientFormProps) {
                 "bg-gray-500": isLoading && !data,
                 "bg-indigo-600 hover:bg-indigo-700": !isLoading && !data,
                 "bg-green-500": data,
-              }
+              },
             )}
             disabled={isLoading}
           >
             {submitSuccess
               ? "Patient Added Successfully"
               : isLoading
-              ? "Adding..."
-              : "Add Patient"}
+                ? "Adding..."
+                : "Add Patient"}
           </button>
         </div>
       </div>

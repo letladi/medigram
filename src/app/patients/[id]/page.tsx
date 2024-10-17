@@ -53,7 +53,8 @@ export default function PatientPage() {
               </Disclosure.Button>
               <Disclosure.Panel className="px-4 pt-4 pb-2 text-base text-gray-200 bg-gray-800 rounded-lg shadow-inner mt-2">
                 <div className="mb-2">
-                  <strong>Physician:</strong> {requisition.physician?.name || "N/A"}
+                  <strong>Physician:</strong>{" "}
+                  {requisition.physician?.name || "N/A"}
                 </div>
                 <div>
                   <strong>Tests:</strong>
@@ -62,7 +63,7 @@ export default function PatientPage() {
                       .filter((test) => test.requisitionId === requisition._id)
                       .map((test) => (
                         <li key={test._id} className="text-gray-300">
-                          {test.name} 
+                          {test.name}
                         </li>
                       ))}
                   </ul>

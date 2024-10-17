@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import axios from 'axios';
+import { useState } from "react";
+import axios from "axios";
 
 interface PostState<T> {
   data: T | null;
@@ -20,7 +20,7 @@ export function usePost<T>(url: string) {
     try {
       const response = await axios.post(url, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
         },
       });
 

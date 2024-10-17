@@ -1,19 +1,22 @@
-import React from 'react';
-import Image from 'next/image';
-import { PatientWithStringId } from '@/types';
-import { PlusIcon } from '@heroicons/react/24/solid';
+import React from "react";
+import Image from "next/image";
+import { PatientWithStringId } from "@/types";
+import { PlusIcon } from "@heroicons/react/24/solid";
 
 interface PatientSidebarProps {
   patient: PatientWithStringId;
   onAddRequisition: () => void;
 }
 
-export default function PatientSidebar({ patient, onAddRequisition }: PatientSidebarProps) {
+export default function PatientSidebar({
+  patient,
+  onAddRequisition,
+}: PatientSidebarProps) {
   return (
     <div className="rounded-lg overflow-hidden max-h-full flex flex-col border">
       <div className="relative w-full pt-[75%] flex-shrink-0">
         <Image
-          src={patient.avatarUrl || '/avatars/patient-avatar.png'}
+          src={patient.avatarUrl || "/avatars/patient-avatar.png"}
           alt={patient.name}
           layout="fill"
           objectFit="cover"
@@ -26,7 +29,10 @@ export default function PatientSidebar({ patient, onAddRequisition }: PatientSid
         <div className="mb-4 text-sm">
           <h3 className="font-semibold mb-1">Address:</h3>
           <p>{patient.address?.street}</p>
-          <p>{patient.address?.city}, {patient.address?.province} {patient.address?.postalCode}</p>
+          <p>
+            {patient.address?.city}, {patient.address?.province}{" "}
+            {patient.address?.postalCode}
+          </p>
         </div>
         <div className="flex justify-between mb-4">
           <div className="text-center">
@@ -34,7 +40,9 @@ export default function PatientSidebar({ patient, onAddRequisition }: PatientSid
             <p className="text-xs uppercase">Tests</p>
           </div>
           <div className="text-center">
-            <p className="font-bold text-lg">{patient.requisitions?.length || 0}</p>
+            <p className="font-bold text-lg">
+              {patient.requisitions?.length || 0}
+            </p>
             <p className="text-xs uppercase">Requisitions</p>
           </div>
         </div>

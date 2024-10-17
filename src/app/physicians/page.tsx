@@ -1,28 +1,27 @@
-'use client'
+"use client";
 
-import { useState, useCallback } from 'react'
-import { useGetPhysicians, useAddPhysician } from '@/hooks/usePhysicians'
-import PhysicianCard from '@/components/PhysicianCard'
-import PhysicianForm from '@/components/PhysicianForm'
-import Modal from '@/components/Modal'
-import { SearchInput } from '@/components/FormInputs'
-import debounce from 'lodash/debounce'
-import { useModal } from '@/components/ModalProvider'
-import SpinningLoader from '@/components/SpinningLoader'
-
+import { useState, useCallback } from "react";
+import { useGetPhysicians, useAddPhysician } from "@/hooks/usePhysicians";
+import PhysicianCard from "@/components/PhysicianCard";
+import PhysicianForm from "@/components/PhysicianForm";
+import Modal from "@/components/Modal";
+import { SearchInput } from "@/components/FormInputs";
+import debounce from "lodash/debounce";
+import { useModal } from "@/components/ModalProvider";
+import SpinningLoader from "@/components/SpinningLoader";
 
 export default function PhysiciansPage() {
   const { data: physicians, isLoading, error, fetchData } = useGetPhysicians();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const { isModalOpen, setIsModalOpen } = useModal();
 
   const afterAddCb = async () => {
     try {
-      await fetchData()
+      await fetchData();
       setIsModalOpen(false);
       // Optionally, you can refetch the physicians list here
     } catch (error) {
-      console.error('Failed to add physician:', error);
+      console.error("Failed to add physician:", error);
     }
   };
 
@@ -30,15 +29,15 @@ export default function PhysiciansPage() {
     debounce((term: string) => {
       setSearchTerm(term);
     }, 300),
-    []
+    [],
   );
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     debouncedSearch(e.target.value);
   };
 
-  const filteredPhysicians = physicians?.filter(physician => 
-    physician.name.toLowerCase().includes(searchTerm.toLowerCase()) 
+  const filteredPhysicians = physicians?.filter((physician) =>
+    physician.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
@@ -55,15 +54,15 @@ export default function PhysiciansPage() {
         />
       </div>
 
-      {isLoading && (
-        <SpinningLoader/>
-      )}
+      {isLoading && <SpinningLoader />}
 
       {error && (
         <div className="rounded-md bg-red-900 p-4 mb-4">
           <div className="flex">
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-300">Error loading physicians</h3>
+              <h3 className="text-sm font-medium text-red-300">
+                Error loading physicians
+              </h3>
               <div className="mt-2 text-sm text-red-200">
                 <p>{error.message}</p>
               </div>
@@ -80,7 +79,11 @@ export default function PhysiciansPage() {
         </div>
       )}
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add New Physician">
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Add New Physician"
+      >
         <PhysicianForm onSubmit={afterAddCb} />
       </Modal>
     </>

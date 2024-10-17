@@ -1,6 +1,6 @@
 import React from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
-import { PhotoIcon } from '@heroicons/react/24/outline';
+import { PhotoIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
 
 interface InputProps {
@@ -32,8 +32,11 @@ export const TextInput: React.FC<InputProps> = ({
         htmlFor={id}
         className="block text-sm font-medium text-gray-300 mb-1"
       >
-        {label} {error && <span className="mt-1 ml-4 text-sm text-red-500">{error}</span>}
-      </label> 
+        {label}{" "}
+        {error && (
+          <span className="mt-1 ml-4 text-sm text-red-500">{error}</span>
+        )}
+      </label>
     )}
     <div className="relative rounded-md shadow-sm">
       {icon && (
@@ -51,12 +54,11 @@ export const TextInput: React.FC<InputProps> = ({
         className={clsx(
           `block w-full rounded-md border-0 bg-gray-700 text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 
           sm:text-sm h-10`,
-          icon ? 'pl-10' : 'pl-3',
-          'pr-3'
+          icon ? "pl-10" : "pl-3",
+          "pr-3",
         )}
       />
     </div>
-    
   </div>
 );
 
@@ -97,7 +99,6 @@ export const FileInput: React.FC<FileInputProps> = ({
     </div>
   </div>
 );
-
 
 export const SearchInput: React.FC<InputProps> = (props) => (
   <div className="relative">

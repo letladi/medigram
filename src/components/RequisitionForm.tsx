@@ -158,7 +158,7 @@ const RequisitionForm: React.FC<RequisitionFormProps> = ({
         href={`/patients/${patientId}`}
         className="text-blue-500 hover:underline mb-4 inline-block"
       >
-        ← Back to Patient
+        Back to Patient
       </Link>
       <div>
         <label className="block text-sm font-medium text-gray-300 mb-2">

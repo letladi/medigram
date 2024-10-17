@@ -13,6 +13,6 @@ export default function NewRequisitionPage() {
   };
 
   return (
-    <RequisitionForm patientId={id} onSubmitSuccess={handleSubmitSuccess}  />
+    <RequisitionForm patientId={id} onSubmitSuccess={handleSubmitSuccess} />
   );
 }

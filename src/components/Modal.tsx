@@ -1,6 +1,6 @@
-import { Fragment, ReactNode } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { Fragment, ReactNode } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 
 interface ModalProps {
   isOpen: boolean;
@@ -9,7 +9,12 @@ interface ModalProps {
   children: ReactNode;
 }
 
-export default function Modal({ isOpen, onClose, title, children }: ModalProps) {
+export default function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
+}: ModalProps) {
   return (
     <Transition show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-10" onClose={onClose}>
