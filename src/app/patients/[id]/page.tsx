@@ -38,7 +38,7 @@ export default function PatientPage() {
     );
 
   return (
-    <div className="space-y-4 h-full overflow-scroll p-4">
+    <div className="space-y-4 h-full p-4">
       {patient.requisitions.map((requisition) => (
         <Disclosure key={requisition._id}>
           {({ open }) => (

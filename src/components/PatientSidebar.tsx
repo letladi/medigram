@@ -10,7 +10,7 @@ interface PatientSidebarProps {
 
 export default function PatientSidebar({ patient, onAddRequisition }: PatientSidebarProps) {
   return (
-    <div className="rounded-lg overflow-hidden h-full flex flex-col border">
+    <div className="rounded-lg overflow-hidden max-h-full flex flex-col border">
       <div className="relative w-full pt-[75%] flex-shrink-0">
         <Image
           src={patient.avatarUrl || '/avatars/patient-avatar.png'}
