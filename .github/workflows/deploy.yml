@@ -38,7 +38,7 @@ jobs:
         run: tar -czf nextjs-build.tar.gz .next public package.json pnpm-lock.yaml
 
       - name: Copy build to server
-        uses: appleboy/scp-action@v0.2.1
+        uses: appleboy/scp-action@v0.1.4 # Use a valid version of the scp action
         with:
           host: ec2-54-197-61-157.compute-1.amazonaws.com
           username: ubuntu
@@ -47,7 +47,7 @@ jobs:
           target: /tmp/
 
       - name: Deploy on server
-        uses: appleboy/ssh-action@v0.1.2
+        uses: appleboy/ssh-action@v0.1.6 # Use a valid version of the ssh action
         with:
           host: ec2-54-197-61-157.compute-1.amazonaws.com
           username: ubuntu
