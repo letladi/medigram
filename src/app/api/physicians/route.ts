@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PhysicianModel } from '@/models/Physician';
 import { AddressModel } from '@/models/Address';
-import {connectMongoDB} from '@/lib/mongoose';
+import { connectMongoDB } from '@/lib/mongoose';
 import { getGridFSBucket } from '@/lib/gridfs';
 import { Readable } from 'stream';
 import { ObjectId } from 'mongodb';
-
 
 /**
  * Helper to parse form data from a Next.js request.
@@ -13,17 +12,19 @@ import { ObjectId } from 'mongodb';
 async function parseFormData(request: NextRequest) {
   const formData = await request.formData();
   const fields: Record<string, string> = {};
-  let avatar: File | undefined;
+  let avatarBuffer: Buffer | undefined;
+  let avatarName: string | undefined;
 
-  formData.forEach((value, key) => {
-    if (key === 'avatar' && value instanceof File) {
-      avatar = value;
+  for (const [key, value] of formData.entries()) {
+    if (key === 'avatar' && value instanceof Blob) {
+      avatarBuffer = Buffer.from(await value.arrayBuffer());
+      avatarName = (value as any).name || 'avatar';
     } else {
       fields[key] = value.toString();
     }
-  });
+  }
 
-  return { fields, avatar };
+  return { fields, avatarBuffer, avatarName };
 }
 
 /**
@@ -67,16 +68,15 @@ export async function POST(request: NextRequest) {
   const bucket = await getGridFSBucket();
 
   try {
-    const { fields, avatar } = await parseFormData(request);
+    const { fields, avatarBuffer, avatarName } = await parseFormData(request);
 
     const { name, specialization, street, city, province, postalCode, licenseNumber } = fields;
     let avatarUrl = null;
 
     // Upload avatar to GridFS if available
-    if (avatar) {
-      const arrayBuffer = await avatar.arrayBuffer();
-      const uploadStream = bucket.openUploadStream(avatar.name);
-      const bufferStream = Readable.from(Buffer.from(arrayBuffer));
+    if (avatarBuffer && avatarName) {
+      const uploadStream = bucket.openUploadStream(avatarName);
+      const bufferStream = Readable.from(avatarBuffer);
       bufferStream.pipe(uploadStream);
 
       await new Promise((resolve, reject) => {
