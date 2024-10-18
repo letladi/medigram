@@ -4,6 +4,7 @@ import { usePost } from "@/hooks/usePost";
 import clsx from "clsx";
 import Select from "react-select";
 import { SA_PROVINCES, selectStyles } from "@/lib/constants";
+import { isString } from "lodash";
 
 interface PhysicianFormProps {
   onSubmit: () => void;
@@ -55,10 +56,31 @@ export default function PhysicianForm({ onSubmit }: PhysicianFormProps) {
       postalCode,
       avatar,
     };
-
+    
     Object.entries(fields).forEach(([fieldName, fieldValue]) => {
-      if (!fieldValue) newErrors[fieldName] = "required";
+      if (!fieldValue) {
+        newErrors[fieldName] = "required";
+      } else if (isString(fieldValue)) {
+        if (fieldValue.length < 3) {
+          newErrors[fieldName] = "too short";
+        } else if (fieldValue.length >= 20) {
+          newErrors[fieldName] = "too long";
+        }
+      }
     });
+    
+    // Postal code validation
+    if (fields.postalCode) {
+      const postalCodeNumber = parseInt(fields.postalCode, 10);
+      if (
+        isNaN(postalCodeNumber) || 
+        postalCodeNumber < 1 || 
+        postalCodeNumber > 9999 || 
+        fields.postalCode.length !== 4
+      ) {
+        newErrors.postalCode = "Invalid postal code";
+      }
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
