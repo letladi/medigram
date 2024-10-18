@@ -6,6 +6,7 @@ import { usePost } from "@/hooks/usePost";
 import { PhysicianWithStringId, RequisitionWithStringId } from "@/types";
 import Link from "next/link";
 import { TextInput } from "@/components/FormInputs";
+import { MAX_SAMPLES, testTypes } from "@/lib/constants";
 
 interface FormData {
   physicianId: string;
@@ -18,21 +19,6 @@ interface FormErrors {
   testTypes?: string;
   samples?: string;
 }
-
-const testTypes = [
-  { value: "blood_count", label: "Complete Blood Count" },
-  { value: "lipid_panel", label: "Lipid Panel" },
-  { value: "thyroid_function", label: "Thyroid Function" },
-  { value: "liver_function", label: "Liver Function" },
-  { value: "kidney_function", label: "Kidney Function" },
-  { value: "hba1c", label: "HbA1c" },
-  { value: "vitamin_d", label: "Vitamin D" },
-  { value: "iron_panel", label: "Iron Panel" },
-  { value: "urinalysis", label: "Urinalysis" },
-  { value: "electrolytes", label: "Electrolytes" },
-];
-
-const MAX_SAMPLES = 8;
 
 interface RequisitionFormProps {
   patientId: string;

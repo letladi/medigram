@@ -3,22 +3,11 @@ import { TextInput, FileInput } from "./FormInputs";
 import { usePost } from "@/hooks/usePost";
 import clsx from "clsx";
 import Select from "react-select";
+import { SA_PROVINCES, selectStyles } from "@/lib/constants";
 
 interface PhysicianFormProps {
   onSubmit: () => void;
 }
-
-const SA_PROVINCES = [
-  "Eastern Cape",
-  "Free State",
-  "Gauteng",
-  "KwaZulu-Natal",
-  "Limpopo",
-  "Mpumalanga",
-  "North West",
-  "Northern Cape",
-  "Western Cape",
-];
 
 const provinceOptions = SA_PROVINCES.map((province) => ({
   value: province,
@@ -49,7 +38,7 @@ export default function PhysicianForm({ onSubmit }: PhysicianFormProps) {
       setSubmitSuccess(true);
       setTimeout(() => {
         onSubmit();
-      }, 4000);
+      }, 3000);
     }
   }, [data, onSubmit]);
 
@@ -107,41 +96,6 @@ export default function PhysicianForm({ onSubmit }: PhysicianFormProps) {
       };
       reader.readAsDataURL(file);
     }
-  };
-
-  const selectStyles = {
-    control: (provided: any) => ({
-      ...provided,
-      backgroundColor: "#1F2937",
-      borderColor: "#374151",
-      color: "#D1D5DB",
-      minHeight: "42px",
-    }),
-    menu: (provided: any) => ({
-      ...provided,
-      backgroundColor: "#1F2937",
-      zIndex: 9999,
-    }),
-    menuPortal: (provided: any) => ({
-      ...provided,
-      zIndex: 9999,
-    }),
-    option: (
-      provided: any,
-      state: { isFocused: boolean; isSelected: boolean },
-    ) => ({
-      ...provided,
-      backgroundColor: state.isFocused
-        ? "#374151"
-        : state.isSelected
-          ? "#4B5563"
-          : "#1F2937",
-      color: "#D1D5DB",
-    }),
-    singleValue: (provided: any) => ({
-      ...provided,
-      color: "#D1D5DB",
-    }),
   };
 
   return (

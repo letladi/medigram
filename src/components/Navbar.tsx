@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { useModal } from "./ModalProvider";
 
-export default function Navbar() {
+export default function Navbar({}) {
   const pathname = usePathname();
   const { setIsModalOpen } = useModal();
 
@@ -23,7 +23,7 @@ export default function Navbar() {
   const addBtnText = getAddButtonText();
 
   return (
-    <nav className="bg-gray-800 shadow-lg">
+    <nav className="bg-gray-800 shadow-lg sticky top-0 z-10">
       <div className="container mx-auto px-6 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center">

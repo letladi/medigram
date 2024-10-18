@@ -19,9 +19,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <ModalProvider>
-          <div className="min-h-screen bg-gray-900 text-gray-100">
-            <Navbar />
-            <main className="container mx-auto px-4 py-8">{children}</main>
+          <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col">
+            <Navbar/>
+            <main className="flex-grow container mx-auto px-4 py-8">{children}</main>
           </div>
         </ModalProvider>
       </body>
